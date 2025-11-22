@@ -33,7 +33,7 @@ const AdminLogin: React.FC = () => {
                 localStorage.setItem('adminUsername', username);
 
                 // Navigate to admin dashboard
-                router.push('/admin');
+                router.push('/admin/overview');
             } else {
                 setError('Invalid username or password');
             }
