@@ -13,7 +13,7 @@ import {
   Download,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import DashboardHeader from "@/components/ui/DashboardHeader";
+import Sidebar from "@/components/ui/Sidebar";
 import { Button } from "@/components/ui/button";
 import {
   documentDecryptionService,
@@ -261,45 +261,41 @@ function GovernmentDecryptionPage() {
   };
 
   return (
-    <div className="w-full bg-gradient-to-tl from-secondary/40 via-ghost-white to-ghost-white relative min-h-screen outfit">
-      {/* Header */}
-      <div className="relative z-50 mb-8">
-        <DashboardHeader />
-      </div>
-
-      {/* Hero Section */}
-      <div className="relative z-10 pt-8 pb-8">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center max-w-4xl mx-auto mb-8"
-          >
-            <motion.h1
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sans-bartle"
-            >
-              <span className="text-primary">Government</span>
-              <span className="text-charcoal-text"> Document Access</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-lg md:text-xl text-charcoal-text/70 max-w-2xl mx-auto"
-            >
-              Access encrypted user documents for verification purposes
-            </motion.p>
-          </motion.div>
-        </div>
-      </div>
+    <div className="flex h-screen bg-gradient-to-tl from-secondary/40 via-ghost-white to-ghost-white outfit overflow-hidden">
+      {/* Sidebar */}
+      <Sidebar />
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-12 md:pb-20">
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-12 md:pb-20 pt-8">
+          {/* Hero Section */}
+          <div className="mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center max-w-4xl mx-auto mb-8"
+            >
+              <motion.h1
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sans-bartle"
+              >
+                <span className="text-primary">Government</span>
+                <span className="text-charcoal-text"> Document Access</span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="text-lg md:text-xl text-charcoal-text/70 max-w-2xl mx-auto"
+              >
+                Access encrypted user documents for verification purposes
+              </motion.p>
+            </motion.div>
+          </div>
         {/* Government Access Status Card */}
         {/* <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8 hover:border-[#00BFFF] hover:shadow-lg transition-all">
           <h3 className="text-xl font-bold text-gray-900 mb-4">Government Access Status</h3>
@@ -661,6 +657,7 @@ function GovernmentDecryptionPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
