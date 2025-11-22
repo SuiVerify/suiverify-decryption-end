@@ -544,21 +544,34 @@ function GovernmentDecryptionPage() {
                       </div>
                     </div>
 
-                    {/* Action buttons at bottom */}
-                    <div className="mt-auto pt-4">
-                      <div className="flex justify-center">
-                        <Button
-                          onClick={() =>
-                            window.open(doc.sui_explorer_url, "_blank")
-                          }
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                        >
-                          View on Explorer
-                        </Button>
+                      {/* Action buttons at bottom */}
+                      <div className="mt-auto pt-4">
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() =>
+                              window.open(doc.sui_explorer_url, "_blank")
+                            }
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                          >
+                            View Attestation
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              window.open(
+                                `https://walruscan.com/testnet/blob/${doc.blob_id}`,
+                                "_blank"
+                              )
+                            }
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                          >
+                            View Blob
+                          </Button>
+                        </div>
                       </div>
-                    </div>
                   </motion.div>
                 ))}
               </div>
@@ -569,9 +582,9 @@ function GovernmentDecryptionPage() {
         {/* Decrypted Files Dialog */}
         {isDialogOpen && decryptedFileUrls.length > 0 && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="rounded-3xl p-6 max-w-6xl max-h-[90vh] overflow-auto bg-white border-[3px] border-primary">
-              <div className="">
-                <div className="flex justify-between items-center mb-4 pb-4 border-b border-primary/30">
+            <div className="rounded-3xl p-3 max-w-6xl max-h-[90vh] overflow-auto bg-white border-[3px] border-primary">
+              <div className=" mb-4 border-b border-primary/30">
+                <div className="flex justify-between items-center">
                   <h3 className="text-xl font-semibold text-charcoal-text sans-bartle">
                     Decrypted Documents
                   </h3>
@@ -626,7 +639,7 @@ function GovernmentDecryptionPage() {
                           className="w-full h-auto border rounded-2xl border-primary/30"
                         />
                       </div>
-                      {selectedDoc && (
+                      {/* {selectedDoc && (
                         <div className="mt-2 text-xs space-y-1 text-charcoal-text/70">
                           <div>
                             <strong>Document Type:</strong>{" "}
@@ -640,16 +653,10 @@ function GovernmentDecryptionPage() {
                             {selectedDoc.verification_status || "Pending"}
                           </div>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   );
                 })}
-              </div>
-
-              <div className="flex justify-end mt-4">
-                <Button onClick={closeDialog} variant="outline">
-                  Close
-                </Button>
               </div>
             </div>
           </div>
