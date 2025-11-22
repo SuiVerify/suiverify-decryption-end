@@ -1,15 +1,26 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useCurrentAccount, useSignPersonalMessage } from '@mysten/dapp-kit';
-import { useRouter } from 'next/navigation';
-import { SessionKey } from '@mysten/seal';
-import { AlertCircle, Clock, FileText, Shield, Search, Download } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { colors } from '@/app/brand';
-import DashboardHeader from '@/components/ui/DashboardHeader';
-import { documentDecryptionService, DocumentDecryptionService, type DocumentMetadata } from '@/services/decryptionService';
-import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
+import { useState, useEffect } from "react";
+import { useCurrentAccount, useSignPersonalMessage } from "@mysten/dapp-kit";
+import { useRouter } from "next/navigation";
+import { SessionKey } from "@mysten/seal";
+import {
+  AlertCircle,
+  Clock,
+  FileText,
+  Shield,
+  Search,
+  Download,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import DashboardHeader from "@/components/ui/DashboardHeader";
+import { Button } from "@/components/ui/button";
+import {
+  documentDecryptionService,
+  DocumentDecryptionService,
+  type DocumentMetadata,
+} from "@/services/decryptionService";
+import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 
 interface DecryptionData {
   user_address: string;
@@ -19,32 +30,36 @@ interface DecryptionData {
 }
 
 function GovernmentDecryptionPage() {
-  const [userAddress, setUserAddress] = useState('');
-  const [decryptionData, setDecryptionData] = useState<DecryptionData | null>(null);
+  const [userAddress, setUserAddress] = useState("");
+  const [decryptionData, setDecryptionData] = useState<DecryptionData | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [decryptedFileUrls, setDecryptedFileUrls] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(false);
-  const [decryptionProgress, setDecryptionProgress] = useState('');
-  const [currentSessionKey, setCurrentSessionKey] = useState<SessionKey | null>(null);
-  
+  const [decryptionProgress, setDecryptionProgress] = useState("");
+  const [currentSessionKey, setCurrentSessionKey] = useState<SessionKey | null>(
+    null
+  );
+
   const currentAccount = useCurrentAccount();
   const { mutate: signPersonalMessage } = useSignPersonalMessage();
   const router = useRouter();
 
   // Check admin authentication
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('adminAuthenticated');
-    if (isAuthenticated !== 'true') {
-      router.push('/adminLogin');
+    const isAuthenticated = localStorage.getItem("adminAuthenticated");
+    if (isAuthenticated !== "true") {
+      router.push("/adminLogin");
     }
   }, [router]);
 
   const fetchDecryptionData = async () => {
     if (!userAddress.trim() || !currentAccount?.address) {
-      setError('Please enter a user address and connect your wallet');
+      setError("Please enter a user address and connect your wallet");
       return;
     }
 
@@ -52,31 +67,41 @@ function GovernmentDecryptionPage() {
     setError(null);
 
     try {
-      console.log('🔍 Fetching decryption data for user:', userAddress);
-      console.log('🏛️ Government wallet:', currentAccount.address);
+      console.log("🔍 Fetching decryption data for user:", userAddress);
+      console.log("🏛️ Government wallet:", currentAccount.address);
 
       const response = await fetch(
-        buildApiUrl(API_ENDPOINTS.ENCRYPTION_GOVERNMENT_DECRYPTION_DATA(userAddress, currentAccount.address)),
+        buildApiUrl(
+          API_ENDPOINTS.ENCRYPTION_GOVERNMENT_DECRYPTION_DATA(
+            userAddress,
+            currentAccount.address
+          )
+        ),
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to fetch data: ${response.status} - ${errorText}`);
+        throw new Error(
+          `Failed to fetch data: ${response.status} - ${errorText}`
+        );
       }
 
       const data: DecryptionData = await response.json();
       setDecryptionData(data);
-      console.log('📊 Decryption data loaded:', data);
-
+      console.log("📊 Decryption data loaded:", data);
     } catch (error) {
-      console.error('❌ Failed to fetch decryption data:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch decryption data');
+      console.error("❌ Failed to fetch decryption data:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch decryption data"
+      );
     } finally {
       setLoading(false);
     }
@@ -84,65 +109,78 @@ function GovernmentDecryptionPage() {
 
   const handleDocumentSelection = (blobId: string, checked: boolean) => {
     if (checked) {
-      setSelectedDocuments(prev => [...prev, blobId]);
+      setSelectedDocuments((prev) => [...prev, blobId]);
     } else {
-      setSelectedDocuments(prev => prev.filter(id => id !== blobId));
+      setSelectedDocuments((prev) => prev.filter((id) => id !== blobId));
     }
   };
 
   const decryptSelectedDocuments = async () => {
-    if (!selectedDocuments.length || !decryptionData || !currentAccount?.address) {
-      setError('Please select documents and connect your wallet');
+    if (
+      !selectedDocuments.length ||
+      !decryptionData ||
+      !currentAccount?.address
+    ) {
+      setError("Please select documents and connect your wallet");
       return;
     }
 
     try {
       setIsDecrypting(true);
       setError(null);
-      setDecryptionProgress('Preparing decryption...');
-      
-      console.log('🔓 Starting decryption process...');
-      console.log('📄 Selected documents:', selectedDocuments.length);
-      console.log('🏛️ Government wallet:', currentAccount.address);
-      
+      setDecryptionProgress("Preparing decryption...");
+
+      console.log("🔓 Starting decryption process...");
+      console.log("📄 Selected documents:", selectedDocuments.length);
+      console.log("🏛️ Government wallet:", currentAccount.address);
+
       // Filter selected documents from the full list
-      const documentsToDecrypt = decryptionData.documents.filter(
-        doc => selectedDocuments.includes(doc.blob_id)
+      const documentsToDecrypt = decryptionData.documents.filter((doc) =>
+        selectedDocuments.includes(doc.blob_id)
       );
-      
-      console.log('📋 Documents to decrypt:', documentsToDecrypt.map(d => ({
-        file_name: d.file_name,
-        blob_id: d.blob_id,
-        encryption_id: d.encryption_id
-      })));
+
+      console.log(
+        "📋 Documents to decrypt:",
+        documentsToDecrypt.map((d) => ({
+          file_name: d.file_name,
+          blob_id: d.blob_id,
+          encryption_id: d.encryption_id,
+        }))
+      );
 
       // Check if we have a valid session key that hasn't expired
-      if (currentSessionKey && !currentSessionKey.isExpired() && 
-          currentSessionKey.getAddress() === currentAccount.address) {
-        console.log('✅ Using existing session key');
-        
+      if (
+        currentSessionKey &&
+        !currentSessionKey.isExpired() &&
+        currentSessionKey.getAddress() === currentAccount.address
+      ) {
+        console.log("✅ Using existing session key");
+
         // Use existing session key
-        const result = await documentDecryptionService.downloadAndDecryptDocuments(
-          documentsToDecrypt,
-          currentSessionKey,
-          setDecryptionProgress
-        );
-        
+        const result =
+          await documentDecryptionService.downloadAndDecryptDocuments(
+            documentsToDecrypt,
+            currentSessionKey,
+            setDecryptionProgress
+          );
+
         if (result.success && result.decryptedFileUrls) {
-          console.log('🎉 Decryption completed successfully!');
+          console.log("🎉 Decryption completed successfully!");
           setDecryptedFileUrls(result.decryptedFileUrls);
           setIsDialogOpen(true);
-          setDecryptionProgress('Decryption completed!');
+          setDecryptionProgress("Decryption completed!");
         } else {
-          throw new Error(result.error || 'Decryption failed');
+          throw new Error(result.error || "Decryption failed");
         }
       } else {
         // Need to create and sign a new session key
-        console.log('🔑 Creating new session key...');
-        setDecryptionProgress('Creating session key for decryption...');
-        
-        const sessionKey = await documentDecryptionService.createSessionKey(currentAccount.address);
-        
+        console.log("🔑 Creating new session key...");
+        setDecryptionProgress("Creating session key for decryption...");
+
+        const sessionKey = await documentDecryptionService.createSessionKey(
+          currentAccount.address
+        );
+
         // Request personal message signature
         signPersonalMessage(
           {
@@ -151,56 +189,65 @@ function GovernmentDecryptionPage() {
           {
             onSuccess: async (result) => {
               try {
-                console.log('✅ Personal message signed successfully');
-                setDecryptionProgress('Signature obtained, starting decryption...');
-                
+                console.log("✅ Personal message signed successfully");
+                setDecryptionProgress(
+                  "Signature obtained, starting decryption..."
+                );
+
                 // Set the signature on the session key
                 await sessionKey.setPersonalMessageSignature(result.signature);
                 setCurrentSessionKey(sessionKey);
-                
+
                 // Now decrypt with the signed session key
-                const decryptResult = await documentDecryptionService.downloadAndDecryptDocuments(
-                  documentsToDecrypt,
-                  sessionKey,
-                  setDecryptionProgress
-                );
-                
+                const decryptResult =
+                  await documentDecryptionService.downloadAndDecryptDocuments(
+                    documentsToDecrypt,
+                    sessionKey,
+                    setDecryptionProgress
+                  );
+
                 if (decryptResult.success && decryptResult.decryptedFileUrls) {
-                  console.log('🎉 Decryption completed successfully!');
-                  console.log('📁 Decrypted files:', decryptResult.decryptedFileUrls.length);
+                  console.log("🎉 Decryption completed successfully!");
+                  console.log(
+                    "📁 Decrypted files:",
+                    decryptResult.decryptedFileUrls.length
+                  );
                   setDecryptedFileUrls(decryptResult.decryptedFileUrls);
                   setIsDialogOpen(true);
-                  setDecryptionProgress('Decryption completed!');
+                  setDecryptionProgress("Decryption completed!");
                 } else {
-                  throw new Error(decryptResult.error || 'Decryption failed');
+                  throw new Error(decryptResult.error || "Decryption failed");
                 }
               } catch (error) {
-                console.error('❌ Error after signature:', error);
-                setError(`Error during decryption: ${error instanceof Error ? error.message : String(error)}`);
-                setDecryptionProgress('');
+                console.error("❌ Error after signature:", error);
+                setError(
+                  `Error during decryption: ${
+                    error instanceof Error ? error.message : String(error)
+                  }`
+                );
+                setDecryptionProgress("");
               }
             },
             onError: (error) => {
-              console.error('❌ Error during signing:', error);
+              console.error("❌ Error during signing:", error);
               setError(`Error during signing: ${error.message}`);
-              setDecryptionProgress('');
+              setDecryptionProgress("");
               setIsDecrypting(false);
-            }
+            },
           }
         );
       }
-      
     } catch (error) {
-      console.error('❌ Decryption failed:', error);
-      setError(error instanceof Error ? error.message : 'Decryption failed');
-      setDecryptionProgress('');
+      console.error("❌ Decryption failed:", error);
+      setError(error instanceof Error ? error.message : "Decryption failed");
+      setDecryptionProgress("");
     } finally {
       setIsDecrypting(false);
     }
   };
 
   const downloadDecryptedFile = (url: string, fileName: string) => {
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = fileName;
     a.click();
@@ -214,65 +261,45 @@ function GovernmentDecryptionPage() {
   };
 
   return (
-    <div className="w-full" style={{ backgroundColor: colors.darkerNavy, position: 'relative', minHeight: '100vh' }}>
-      {/* Grid Pattern Background */}
-      <div
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, ${colors.primary}20 1px, transparent 1px),
-            linear-gradient(to bottom, ${colors.primary}20 1px, transparent 1px)
-          `,
-          backgroundSize: "20px 30px",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
-          maskImage:
-            "radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%)",
-        }}
-      />
-
+    <div className="w-full bg-gradient-to-tl from-secondary/40 via-ghost-white to-ghost-white relative min-h-screen outfit">
       {/* Header */}
-      <div className="relative z-10">
-        <div className="absolute top-4 w-full z-50">
-          <DashboardHeader />
-        </div>
-        
-        {/* Hero Section */}
-        <div className="pt-[10rem] pb-12">
-          <div className="max-w-7xl mx-auto px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center max-w-4xl mx-auto mb-12"
-            >
-              <motion.h1
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-4xl md:text-6xl font-bold mb-4"
-              >
-                <motion.span style={{ color: colors.primary }}>Government</motion.span>
-                <motion.span style={{ color: colors.white }}> Document Access</motion.span>
-              </motion.h1>
+      <div className="relative z-50 mb-8">
+        <DashboardHeader />
+      </div>
 
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="text-xl"
-                style={{ color: colors.lightBlue }}
-              >
-                Access encrypted user documents for verification purposes
-              </motion.p>
-            </motion.div>
-          </div>
+      {/* Hero Section */}
+      <div className="relative z-10 pt-8 pb-8">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center max-w-4xl mx-auto mb-8"
+          >
+            <motion.h1
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sans-bartle"
+            >
+              <span className="text-primary">Government</span>
+              <span className="text-charcoal-text"> Document Access</span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-lg md:text-xl text-charcoal-text/70 max-w-2xl mx-auto"
+            >
+              Access encrypted user documents for verification purposes
+            </motion.p>
+          </motion.div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
-
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-12 md:pb-20">
         {/* Government Access Status Card */}
         {/* <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8 hover:border-[#00BFFF] hover:shadow-lg transition-all">
           <h3 className="text-xl font-bold text-gray-900 mb-4">Government Access Status</h3>
@@ -314,19 +341,23 @@ function GovernmentDecryptionPage() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="bg-white/10 backdrop-blur-sm rounded-3xl border p-8 mb-8"
-          style={{ borderColor: `${colors.primary}30` }}
+          className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl sm:rounded-3xl border border-primary/20 p-8 mb-8 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] hover:shadow-[0.15em_0.15em_0_0_rgb(124_58_237)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] transition-all duration-300"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-2xl" style={{ backgroundColor: `${colors.primary}20` }}>
-              <Search className="w-6 h-6" style={{ color: colors.primary }} />
+            <div className="p-3 rounded-2xl bg-primary/20">
+              <Search className="w-5 h-5 md:w-6 md:h-6 text-primary" />
             </div>
-            <h3 className="text-2xl font-bold" style={{ color: colors.white }}>User Document Lookup</h3>
+            <h3 className="text-xl md:text-2xl font-bold text-charcoal-text">
+              User Document Lookup
+            </h3>
           </div>
-          
-          <div className="flex gap-4">
+
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label htmlFor="userAddress" className="block text-sm font-medium mb-2" style={{ color: colors.lightBlue }}>
+              <label
+                htmlFor="userAddress"
+                className="block text-sm font-medium mb-2 text-charcoal-text/70"
+              >
                 User Wallet Address
               </label>
               <input
@@ -335,40 +366,29 @@ function GovernmentDecryptionPage() {
                 value={userAddress}
                 onChange={(e) => setUserAddress(e.target.value)}
                 placeholder="Enter user's Sui wallet address (0x...)"
-                className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-opacity-50"
-                style={{ 
-                  backgroundColor: `${colors.primary}10`,
-                  border: `1px solid ${colors.primary}40`
-                }}
+                className="w-full px-4 py-3 rounded-xl bg-white/80 text-charcoal-text placeholder-gray-400 border border-primary/30 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
               />
             </div>
             <div className="flex items-end">
-              <button
+              <Button
                 onClick={fetchDecryptionData}
                 disabled={loading || !currentAccount?.address}
-                className={`px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 ${
-                  loading || !currentAccount?.address
-                    ? 'text-gray-200 cursor-not-allowed'
-                    : 'text-white'
-                }`}
-                style={{
-                  background: loading || !currentAccount?.address 
-                    ? '#9ca3af' 
-                    : colors.gradients.primary
-                }}
+                variant="default"
+                size="lg"
+                className="w-full sm:w-auto"
               >
                 {loading ? (
                   <>
-                    <Clock className="w-4 h-4 animate-spin" />
+                    <Clock className="w-4 h-4 animate-spin mr-2" />
                     Searching...
                   </>
                 ) : (
                   <>
-                    <Search className="w-4 h-4" />
+                    <Search className="w-4 h-4 mr-2" />
                     Fetch Documents
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </motion.div>
@@ -378,28 +398,28 @@ function GovernmentDecryptionPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-6 mb-8 flex items-center gap-3"
-            style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}
+            className="rounded-2xl p-6 mb-8 flex items-center gap-3 bg-error-red/10 border border-error-red"
           >
-            <div className="p-2 rounded-lg" style={{ backgroundColor: `${colors.primary}20` }}>
-              <AlertCircle className="w-5 h-5 text-red-400" />
+            <div className="p-2 rounded-lg bg-error-red/20">
+              <AlertCircle className="w-5 h-5 text-error-red" />
             </div>
-            <p className="font-medium" style={{ color: colors.white }}>{error}</p>
+            <p className="font-medium text-charcoal-text">{error}</p>
           </motion.div>
         )}
-        
+
         {/* Progress Display */}
         {decryptionProgress && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-6 mb-8 flex items-center gap-3"
-            style={{ backgroundColor: `${colors.primary}10`, border: `1px solid ${colors.primary}30` }}
+            className="rounded-2xl p-6 mb-8 flex items-center gap-3 bg-primary/10 border border-primary/30"
           >
-            <div className="p-2 rounded-lg" style={{ backgroundColor: `${colors.primary}20` }}>
-              <Clock className="w-5 h-5" style={{ color: colors.primary }} />
+            <div className="p-2 rounded-lg bg-primary/20">
+              <Clock className="w-5 h-5 text-primary" />
             </div>
-            <p className="font-medium" style={{ color: colors.white }}>{decryptionProgress}</p>
+            <p className="font-medium text-charcoal-text">
+              {decryptionProgress}
+            </p>
           </motion.div>
         )}
 
@@ -409,58 +429,56 @@ function GovernmentDecryptionPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="bg-white/10 backdrop-blur-sm rounded-3xl border p-8 mb-8"
-            style={{ borderColor: `${colors.primary}30` }}
+            className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl sm:rounded-3xl border border-primary/20 p-8 mb-8 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)] hover:shadow-[0.15em_0.15em_0_0_rgb(124_58_237)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em] transition-all duration-300"
           >
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl" style={{ backgroundColor: `${colors.primary}20` }}>
-                  <Shield className="w-6 h-6" style={{ color: colors.primary }} />
+                <div className="p-3 rounded-2xl bg-primary/20">
+                  <Shield className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold" style={{ color: colors.white }}>
+                  <h3 className="text-xl md:text-2xl font-bold text-charcoal-text">
                     Accessible Documents ({decryptionData.total_documents})
                   </h3>
-                  <p className="text-sm mt-1" style={{ color: colors.lightBlue }}>Select documents to decrypt and view</p>
+                  <p className="text-xs md:text-sm mt-1 text-charcoal-text/70">
+                    Select documents to decrypt and view
+                  </p>
                 </div>
               </div>
-              <button
+              <Button
                 onClick={decryptSelectedDocuments}
-                disabled={!selectedDocuments.length || !currentAccount?.address || isDecrypting}
-                className={`px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 ${
-                  !selectedDocuments.length || !currentAccount?.address || isDecrypting
-                    ? 'text-gray-200 cursor-not-allowed'
-                    : 'text-white'
-                }`}
-                style={{
-                  background: !selectedDocuments.length || !currentAccount?.address || isDecrypting
-                    ? '#9ca3af'
-                    : colors.gradients.primary
-                }}
+                disabled={
+                  !selectedDocuments.length ||
+                  !currentAccount?.address ||
+                  isDecrypting
+                }
+                variant="default"
+                size="lg"
+                className="w-full lg:w-auto"
               >
                 {isDecrypting ? (
                   <>
-                    <Clock className="w-4 h-4 animate-spin" />
+                    <Clock className="w-4 h-4 animate-spin mr-2" />
                     Decrypting...
                   </>
                 ) : (
                   <>
-                    <Shield className="w-4 h-4" />
+                    <Shield className="w-4 h-4 mr-2" />
                     Decrypt Documents ({selectedDocuments.length})
                   </>
                 )}
-              </button>
+              </Button>
             </div>
 
             {decryptionData.documents.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: colors.lightBlue }} />
-                <p className="text-lg" style={{ color: colors.white }}>
+                <FileText className="w-16 h-16 mx-auto mb-4 text-primary/50" />
+                <p className="text-lg text-charcoal-text/70">
                   No accessible documents found for this user address
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
                 {decryptionData.documents.map((doc, index) => (
                   <motion.div
                     key={doc.blob_id}
@@ -468,62 +486,77 @@ function GovernmentDecryptionPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                     whileHover={{ y: -8, scale: 1.02 }}
-                    className="rounded-2xl p-6 transition-all duration-300 flex flex-col h-full"
-                    style={{
-                      backgroundColor: colors.darkNavy,
-                      border: `1px solid ${colors.primary}30`
-                    }}
+                    className="bg-gradient-to-br from-secondary/10 to-secondary/5 rounded-2xl p-6 transition-all duration-300 flex flex-col h-full border border-secondary/20 shadow-[0.1em_0.1em_0_0_rgb(20_184_166)] hover:shadow-[0.15em_0.15em_0_0_rgb(20_184_166)] hover:-translate-x-[0.05em] hover:-translate-y-[0.05em]"
                   >
-                    <div className="flex items-start gap-4 mb-4">
+                    <div className="flex items-start gap-3 mb-4">
                       <input
                         type="checkbox"
                         id={`doc-${index}`}
                         checked={selectedDocuments.includes(doc.blob_id)}
-                        onChange={(e) => handleDocumentSelection(doc.blob_id, e.target.checked)}
-                        className="mt-1 h-5 w-5 rounded flex-shrink-0"
-                        style={{ accentColor: colors.primary }}
+                        onChange={(e) =>
+                          handleDocumentSelection(doc.blob_id, e.target.checked)
+                        }
+                        className="mt-1 h-5 w-5 rounded flex-shrink-0 accent-primary cursor-pointer"
                       />
-                      <div className="flex-1 min-w-0">
-                        <div className="mb-3">
-                          <h4 className="font-bold text-lg" style={{ color: colors.white }}>{doc.file_name}</h4>
+                      <div className="mb-3">
+                        <h4 className="font-bold text-base md:text-lg text-charcoal-text line-clamp-2">
+                          {doc.file_name}
+                        </h4>
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col gap-2 text-sm">
+                        <div className="flex justify-between items-center gap-2 rounded-lg p-2.5 bg-primary/10">
+                          <p className="text-xs font-medium text-charcoal-text/70 min-w-[100px]">
+                            Document Type:
+                          </p>
+                          <p className="font-semibold text-sm text-charcoal-text truncate">
+                            {doc.document_type == "aadhaar" ? "Pan" : "Pan"}
+                          </p>
                         </div>
-                        <div className="space-y-3 mb-4">
-                          <div className="grid grid-cols-3 gap-3 text-sm">
-                            <div className="rounded-xl p-3" style={{ backgroundColor: `${colors.primary}10` }}>
-                              <p className="text-xs font-medium mb-1" style={{ color: colors.lightBlue }}>Document Type</p>
-                              <p className="font-semibold" style={{ color: colors.white }}>{doc.document_type}</p>
-                            </div>
-                            <div className="rounded-xl p-3" style={{ backgroundColor: `${colors.primary}10` }}>
-                              <p className="text-xs font-medium mb-1" style={{ color: colors.lightBlue }}>DID Type</p>
-                              <p className="font-semibold" style={{ color: colors.white }}>{doc.did_type}</p>
-                            </div>
-                            <div className="rounded-xl p-3" style={{ backgroundColor: `${colors.primary}10` }}>
-                              <p className="text-xs font-medium mb-1" style={{ color: colors.lightBlue }}>Created</p>
-                              <p className="font-semibold" style={{ color: colors.white }}>{new Date(doc.created_at).toLocaleDateString()}</p>
-                            </div>
-                          </div>
+                        <div className="flex justify-between items-center gap-2 rounded-lg p-2.5 bg-primary/10">
+                          <p className="text-xs font-medium text-charcoal-text/70 min-w-[100px]">
+                            DID Type:
+                          </p>
+                          <p className="font-semibold text-sm text-charcoal-text truncate">
+                            {doc.did_type}
+                          </p>
+                        </div>
+                        <div className="flex justify-between items-center gap-2 rounded-lg p-2.5 bg-primary/10">
+                          <p className="text-xs font-medium text-charcoal-text/70 min-w-[100px]">
+                            Created At:
+                          </p>
+                          <p className="font-semibold text-sm text-charcoal-text">
+                            {new Date(doc.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex justify-between items-center gap-2 rounded-lg p-2.5 bg-primary/10">
+                          <p className="text-xs font-medium text-charcoal-text/70 min-w-[100px]">
+                            Blob ID:
+                          </p>
+                          <p
+                            className="font-semibold text-sm text-charcoal-text truncate"
+                            title={doc.blob_id}
+                          >
+                            {doc.blob_id}
+                          </p>
                         </div>
                       </div>
                     </div>
-                    
-                    {/* Action buttons and blob info at bottom */}
-                    <div className="mt-auto space-y-3">
+
+                    {/* Action buttons at bottom */}
+                    <div className="mt-auto pt-4">
                       <div className="flex justify-center">
-                        <a
-                          href={doc.sui_explorer_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-                          style={{ 
-                            backgroundColor: `${colors.primary}20`,
-                            color: colors.primary
-                          }}
+                        <Button
+                          onClick={() =>
+                            window.open(doc.sui_explorer_url, "_blank")
+                          }
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
                         >
-                          🔍 Sui Explorer
-                        </a>
-                      </div>
-                      <div className="rounded-xl p-3 text-xs font-mono" style={{ backgroundColor: colors.darkerNavy, color: colors.lightBlue }}>
-                        <div><strong>Blob ID:</strong> {doc.blob_id}</div>
+                          View on Explorer
+                        </Button>
                       </div>
                     </div>
                   </motion.div>
@@ -535,74 +568,88 @@ function GovernmentDecryptionPage() {
 
         {/* Decrypted Files Dialog */}
         {isDialogOpen && decryptedFileUrls.length > 0 && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="rounded-3xl p-6 max-w-6xl max-h-[90vh] overflow-auto" style={{ backgroundColor: colors.darkNavy }}>
-              <div className="flex justify-between items-center mb-4" style={{ borderBottom: `1px solid ${colors.primary}30` }}>
-                <h3 className="text-xl font-semibold" style={{ color: colors.white }}>Decrypted Documents</h3>
-                <button
-                  onClick={closeDialog}
-                  className="text-white hover:opacity-80 text-2xl font-bold p-2 rounded-lg transition-opacity"
-                  style={{ backgroundColor: `${colors.primary}20` }}
-                >
-                  ×
-                </button>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="rounded-3xl p-6 max-w-6xl max-h-[90vh] overflow-auto bg-white border-[3px] border-primary">
+              <div className="">
+                <div className="flex justify-between items-center mb-4 pb-4 border-b border-primary/30">
+                  <h3 className="text-xl font-semibold text-charcoal-text sans-bartle">
+                    Decrypted Documents
+                  </h3>
+                  <button
+                    onClick={closeDialog}
+                    className="text-charcoal-text/60 hover:text-charcoal-text text-2xl font-bold p-2 rounded-lg transition-colors hover:bg-primary/10"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <p className="mb-4 text-charcoal-text/70">
+                  These documents have been successfully decrypted using Seal
+                  protocol and are only visible to authorized government
+                  personnel.
+                </p>
               </div>
-              
-              <p className="mb-4" style={{ color: colors.lightBlue }}>
-                These documents have been successfully decrypted using Seal protocol and are only visible to authorized government personnel.
-              </p>
-              
+
               <div className="grid gap-4">
                 {decryptedFileUrls.map((url, index) => {
-                  const selectedDoc = decryptionData?.documents.filter(
-                    doc => selectedDocuments.includes(doc.blob_id)
+                  const selectedDoc = decryptionData?.documents.filter((doc) =>
+                    selectedDocuments.includes(doc.blob_id)
                   )[index];
                   return (
-                    <div key={index} className="rounded-2xl p-4" style={{ border: `1px solid ${colors.primary}30` }}>
+                    <div
+                      key={index}
+                      className="rounded-2xl p-4 border border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10"
+                    >
                       <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-semibold" style={{ color: colors.white }}>
+                        <h4 className="font-semibold text-charcoal-text">
                           {selectedDoc?.file_name || `Document ${index + 1}`}
                         </h4>
-                        <button
-                          onClick={() => downloadDecryptedFile(
-                            url, 
-                            selectedDoc?.file_name || `decrypted-document-${index + 1}.jpg`
-                          )}
-                          className="px-3 py-1 text-white rounded-xl hover:opacity-90 text-sm transition-opacity flex items-center gap-1"
-                          style={{ backgroundColor: colors.primary }}
+                        <Button
+                          onClick={() =>
+                            downloadDecryptedFile(
+                              url,
+                              selectedDoc?.file_name ||
+                                `decrypted-document-${index + 1}.jpg`
+                            )
+                          }
+                          variant="default"
+                          size="sm"
                         >
-                          <Download className="w-3 h-3" />
+                          <Download className="w-3 h-3 mr-1" />
                           Download
-                        </button>
+                        </Button>
                       </div>
                       <div className="w-full">
-                        <img 
-                          src={url} 
-                          alt={`Decrypted document ${index + 1}`} 
-                          className="w-full h-auto border rounded-2xl"
-                          style={{ borderColor: `${colors.primary}30` }}
+                        <img
+                          src={url}
+                          alt={`Decrypted document ${index + 1}`}
+                          className="w-full h-auto border rounded-2xl border-primary/30"
                         />
                       </div>
                       {selectedDoc && (
-                        <div className="mt-2 text-xs space-y-1" style={{ color: colors.lightBlue }}>
-                          <div><strong>Document Type:</strong> {selectedDoc.document_type}</div>
-                          <div><strong>DID Type:</strong> {selectedDoc.did_type}</div>
-                          <div><strong>Verification Status:</strong> {selectedDoc.verification_status || 'Pending'}</div>
+                        <div className="mt-2 text-xs space-y-1 text-charcoal-text/70">
+                          <div>
+                            <strong>Document Type:</strong>{" "}
+                            {selectedDoc.document_type}
+                          </div>
+                          <div>
+                            <strong>DID Type:</strong> {selectedDoc.did_type}
+                          </div>
+                          <div>
+                            <strong>Verification Status:</strong>{" "}
+                            {selectedDoc.verification_status || "Pending"}
+                          </div>
                         </div>
                       )}
                     </div>
                   );
                 })}
               </div>
-              
+
               <div className="flex justify-end mt-4">
-                <button
-                  onClick={closeDialog}
-                  className="px-6 py-2 text-white rounded-xl hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: colors.darkerNavy, border: `1px solid ${colors.primary}40` }}
-                >
+                <Button onClick={closeDialog} variant="outline">
                   Close
-                </button>
+                </Button>
               </div>
             </div>
           </div>

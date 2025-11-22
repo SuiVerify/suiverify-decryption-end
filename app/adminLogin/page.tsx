@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { colors } from '@/app/brand';
 import { Eye, EyeOff, Shield, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const AdminLogin: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -53,14 +53,14 @@ const AdminLogin: React.FC = () => {
     }, [router]);
 
     return (
-        <div className="w-full min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.darkerNavy }}>
+        <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-tl from-secondary/40 via-ghost-white to-ghost-white outfit">
             {/* Grid Pattern Background */}
             <div
-                className="fixed inset-0 z-0"
+                className="absolute inset-0 z-0"
                 style={{
                     backgroundImage: `
-            linear-gradient(to right, ${colors.primary}20 1px, transparent 1px),
-            linear-gradient(to bottom, ${colors.primary}20 1px, transparent 1px)
+            linear-gradient(to right, #DEE2E6 1px, transparent 1px),
+            linear-gradient(to bottom, #DEE2E6 1px, transparent 1px)
           `,
                     backgroundSize: "20px 30px",
                     WebkitMaskImage:
@@ -76,8 +76,7 @@ const AdminLogin: React.FC = () => {
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="bg-white/10 backdrop-blur-sm rounded-3xl border p-8"
-                    style={{ borderColor: `${colors.primary}30` }}
+                    className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl sm:rounded-3xl border border-primary/20 p-8 shadow-[0.1em_0.1em_0_0_rgb(124_58_237)]"
                 >
                     {/* Header */}
                     <motion.div
@@ -86,11 +85,11 @@ const AdminLogin: React.FC = () => {
                         transition={{ duration: 0.8, delay: 0.2 }}
                         className="text-center mb-8"
                     >
-                        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: `${colors.primary}20` }}>
-                            <Shield className="w-8 h-8" style={{ color: colors.primary }} />
+                        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-primary/20">
+                            <Shield className="w-8 h-8 text-primary" />
                         </div>
-                        <h1 className="text-2xl font-bold mb-2" style={{ color: colors.white }}>Admin Login</h1>
-                        <p className="text-sm" style={{ color: colors.lightBlue }}>Access government document decryption portal</p>
+                        <h1 className="text-2xl font-bold mb-2 text-charcoal-text sans-bartle">Admin Login</h1>
+                        <p className="text-sm text-charcoal-text/70">Access government document decryption portal</p>
                     </motion.div>
 
                     {/* Login Form */}
@@ -101,7 +100,7 @@ const AdminLogin: React.FC = () => {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.6, delay: 0.4 }}
                         >
-                            <label htmlFor="username" className="block text-sm font-medium mb-2" style={{ color: colors.lightBlue }}>
+                            <label htmlFor="username" className="block text-sm font-medium mb-2 text-charcoal-text/70">
                                 Username
                             </label>
                             <input
@@ -110,11 +109,7 @@ const AdminLogin: React.FC = () => {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 placeholder="Enter username"
-                                className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-opacity-50 transition-all"
-                                style={{
-                                    backgroundColor: `${colors.primary}10`,
-                                    border: `1px solid ${colors.primary}40`
-                                }}
+                                className="w-full px-4 py-3 rounded-xl bg-white/80 text-charcoal-text placeholder-gray-400 border border-primary/30 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                                 required
                             />
                         </motion.div>
@@ -125,7 +120,7 @@ const AdminLogin: React.FC = () => {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.6, delay: 0.5 }}
                         >
-                            <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: colors.lightBlue }}>
+                            <label htmlFor="password" className="block text-sm font-medium mb-2 text-charcoal-text/70">
                                 Password
                             </label>
                             <div className="relative">
@@ -135,17 +130,13 @@ const AdminLogin: React.FC = () => {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter password"
-                                    className="w-full px-4 py-3 pr-12 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-opacity-50 transition-all"
-                                    style={{
-                                        backgroundColor: `${colors.primary}10`,
-                                        border: `1px solid ${colors.primary}40`
-                                    }}
+                                    className="w-full px-4 py-3 pr-12 rounded-xl bg-white/80 text-charcoal-text placeholder-gray-400 border border-primary/30 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                                     required
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-charcoal-text/40 hover:text-charcoal-text transition-colors"
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
@@ -157,45 +148,39 @@ const AdminLogin: React.FC = () => {
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="flex items-center gap-3 p-3 rounded-xl"
-                                style={{ backgroundColor: `${colors.primary}10`, border: `1px solid #ef4444` }}
+                                className="flex items-center gap-3 p-3 rounded-xl bg-error-red/10 border border-error-red"
                             >
-                                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                                <p className="text-sm text-red-200">{error}</p>
+                                <AlertCircle className="w-5 h-5 text-error-red flex-shrink-0" />
+                                <p className="text-sm text-error-red">{error}</p>
                             </motion.div>
                         )}
 
                         {/* Login Button */}
-                        <motion.button
-                            type="submit"
-                            disabled={loading || !username || !password}
-                            className={`w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${loading || !username || !password
-                                    ? 'text-gray-200 cursor-not-allowed'
-                                    : 'text-white'
-                                }`}
-                            style={{
-                                background: loading || !username || !password
-                                    ? '#9ca3af'
-                                    : colors.gradients.primary
-                            }}
-                            whileHover={!loading && username && password ? { scale: 1.02 } : {}}
-                            whileTap={!loading && username && password ? { scale: 0.98 } : {}}
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.6 }}
                         >
-                            {loading ? (
-                                <>
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    Authenticating...
-                                </>
-                            ) : (
-                                <>
-                                    <Shield className="w-5 h-5" />
-                                    Login to Admin Portal
-                                </>
-                            )}
-                        </motion.button>
+                            <Button
+                                type="submit"
+                                disabled={loading || !username || !password}
+                                variant="default"
+                                size="lg"
+                                className="w-full"
+                            >
+                                {loading ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                        Authenticating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Shield className="w-5 h-5 mr-2" />
+                                        Login to Admin Portal
+                                    </>
+                                )}
+                            </Button>
+                        </motion.div>
                     </form>
 
                     {/* Footer */}
@@ -205,7 +190,7 @@ const AdminLogin: React.FC = () => {
                         transition={{ duration: 0.8, delay: 0.8 }}
                         className="mt-6 text-center"
                     >
-                        <p className="text-xs" style={{ color: colors.lightBlue }}>
+                        <p className="text-xs text-charcoal-text/60">
                             Authorized government personnel only
                         </p>
                     </motion.div>
