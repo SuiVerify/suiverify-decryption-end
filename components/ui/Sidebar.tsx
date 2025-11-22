@@ -69,11 +69,13 @@ const Sidebar = () => {
       </nav>
 
       {/* Connect Wallet */}
-      <div className="p-4 border-t border-primary-dark">
-        <ConnectButton
-          connectText="Connect Wallet"
-          className="[&>button]:w-full [&>button]:bg-white [&>button]:text-primary [&>button]:px-4 [&>button]:py-2 [&>button]:rounded-lg [&>button]:hover:bg-white/90 [&>button]:transition-colors [&>button]:font-medium [&>button]:border-[3px] [&>button]:border-white [&>button]:shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] mb-4"
-        />
+      <div className="p-4 border-t border-primary-dark w-full">
+        <div className="w-full [&>*]:w-full">
+          <ConnectButton
+            connectText="Connect Wallet"
+            className="w-full [&>*]:w-full [&>button]:w-full [&>div]:w-full [&>div>button]:w-full [&>button]:bg-white [&>button]:text-primary [&>button]:px-4 [&>button]:py-2 [&>button]:rounded-lg [&>button]:hover:bg-white/90 [&>button]:transition-colors [&>button]:font-medium [&>button]:border-[3px] [&>button]:border-white [&>button]:shadow-[0.1em_0.1em_0_0_rgb(0_0_0)] [&>button]:block"
+          />
+        </div>
       </div>
 
       {/* Logout */}
